@@ -26,6 +26,23 @@ float_array:          .space 400   # 100 * 4 bytes = 400 bytes (use MAX_ELEMS*4)
 elem_count:           .word 0
 
 .text
+initialInput:
+	la $a0, prompt_enter_list
+	li $v0, 4
+	syscall
+	
+	li $v0, 8          # syscall code 8 = read string
+    	la $a0, input_buf      # load address of buffer
+    	li $a1, 256          # maximum number of bytes to read
+    	syscall
+    	
+    	move float_array, $a0
+    	
+    	li $v0, 4          # print string
+    	la $a0, input_buf
+    	syscall
+input_parser:
+	#TODO!!!
 main:
 # PART 4: Each function will be executed as requested by the user, using a prompt system to display the different 
 #    	  options available and process what the user wants.
