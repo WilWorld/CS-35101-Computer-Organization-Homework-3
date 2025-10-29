@@ -1,0 +1,36 @@
+An example dialog follows:
+This is the list sorting program.
+Please enter a list to process
+#input
+[3.6, 1.5, 5.24, 3, 4.7, 13.6]
+#output
+Please select an option:
+1. Sort
+2. Calculate average of all values.
+3. Find the lowest element.
+4. Find the greatest element.
+5. Find the sum of all elements.
+6. Print a specific element.
+7. Print the list contents.
+8. Exit.
+#input
+1
+#output
+List sorted!
+Please select an option:
+#input
+9
+#output
+[1.5, 3, 3.6, 4.7, 5.24, 13.6]
+Please select an option:
+#input
+3
+#output
+The lowest element is:
+1.5
+Please select an option:
+#input
+8
+#output
+Goodbye!
+#Program exits
