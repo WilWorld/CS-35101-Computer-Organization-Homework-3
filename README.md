@@ -13,12 +13,11 @@ Each team will write an assembly program called floatList.asm that will:
 5. After the execution of each function, a message prompt must be given to the user to alert the user about the competition of the function.
 
 FOR PART 1:
-a. The list must begin with the ‘ [ ’ character and end with the ‘ ] ’ character.
-b. Each number will be separated by a ‘ , ’.
-c. Floating point will be represented with the ‘ . ’ character’.
-d. All floating-point numbers will have up to two decimal numbers of
-precision.
-e. Integer elements are permitted (processed as float anyways)
+1. The list must begin with the ‘ [ ’ character and end with the ‘ ] ’ character.
+2. Each number will be separated by a ‘ , ’.
+3. Floating point will be represented with the ‘ . ’ character’.
+4. All floating-point numbers will have up to two decimal numbers of precision.
+5. Integer elements are permitted (processed as float anyways)
 
 FOR PART 3:
 1. Sort the list from lowest to highest, consider using the bubble sort
