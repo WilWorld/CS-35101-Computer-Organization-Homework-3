@@ -13,14 +13,14 @@ input_buf_len:        .word 256
 # Prompts the user for an operation
 menu_prompt: .asciiz "Please select an option: \n1. Sort\n2. Calculate average of all values.\n3. Find the lowest element.\n4. Find the greatest element.\n5. Find the sum of all elements.\n6. Print a specific element.\n7. Print the list contents.\n8. Exit.\n> " 
 list_sorted: .asciiz "List sorted!\n" 			# lets the user know the list has been sorted
-goodbye: .asciiz "Goodbye!\n" 					# Exits program
+goodbye: .asciiz "Goodbye!\n" 				# Exits program
 lowest: .asciiz "The lowest value is " 			# for displaying the lowest value in the list
 greatest: .asciiz "The greatest value is " 		# for displaying the highest value in the list
 sum: .asciiz "The sum of the list is " 			# for displaying the sum of the list
-average: .asciiz "The average of the list is "	# for displaying the average of the list
-index_prompt: .asciiz "Enter index (0-based):"  # prompts user to enter a value to look for the value in that index
+average: .asciiz "The average of the list is "		# for displaying the average of the list
+index_prompt: .asciiz "Enter index (0-based):"  	# prompts user to enter a value to look for the value in that index
 invalid: .asciiz "Invalid index.\n" 			# if invalid, will print
-complete:.asciiz "Completed!\n" 				# displays when complete
+complete:.asciiz "Completed!\n" 			# displays when complete
 invalid_menu: .asciiz  "Invalid menu selection, try again\n"
 nextOperation: .asciiz "Please select an option: \n"
 comma: .asciiz ", "
@@ -144,94 +144,211 @@ menuLoop:
     li $v0, 5
     syscall
     move $t1, $v0
-	
-	# MENU SWITCHES
-	beq $t1, 1, SORT_LIST		# If 1, jump to SORT_LIST
-	beq $t1, 2, FIND_AVERAGE 	# if 2, jump to FIND_AVERAGE
-	beq $t1, 3, FIND_LOWEST 	# if 3, jump to FIND_LOWEST
-	beq $t1, 4, FIND_GREATEST 	# if 4, jump to FIND_GREATEST
-	beq $t1, 5, FIND_SUM 		# if 5, jump to FIND_SUM
-	beq $t1, 6, FIND_INDEX 		# if 6, jump to FIND_INDEX
-	beq $t1, 7, PRINT_LIST		# if 7, jump to PRINT_LIST
-	beq $t1, 8, EXIT_PROGRAM	# if 8, exits the program
+    
+    # MENU SWITCHES
+    beq $t1, 1, SORT_LIST		# If 1, jump to SORT_LIST
+    beq $t1, 2, FIND_AVERAGE 	# if 2, jump to FIND_AVERAGE
+    beq $t1, 3, FIND_LOWEST 	# if 3, jump to FIND_LOWEST
+    beq $t1, 4, FIND_GREATEST 	# if 4, jump to FIND_GREATEST
+    beq $t1, 5, FIND_SUM 		# if 5, jump to FIND_SUM
+    beq $t1, 6, FIND_INDEX 		# if 6, jump to FIND_INDEX
+    beq $t1, 7, PRINT_LIST		# if 7, jump to PRINT_LIST
+    beq $t1, 8, EXIT_PROGRAM	# if 8, exits the program
 
-	# Handles invalid input
-	j INVALID_OPTION
+    # Handles invalid input
+    j INVALID_OPTION
 
 # PART 3: Execute the following functions on the list.
 # 1. Sort the list from lowest to highest, consider using the bubble sort algorithm explained in class.
 SORT_LIST:
- # Load element count
-    lw $t0, elem_count        # t0 = number of elements
-    # Outer loop counter (i)
-    li $t1, 0                 # t1 = i = 0
+	# Load element count
+    	lw $t0, elem_count        	  # t0 = number of elements
+	# Outer loop counter (i)
+	li $t1, 0                	  # t1 = i = 0
 
-outer_loop:
-    bge $t1, $s5, sort_done   # if i >= elem_count, done
-    # Inner loop counter (j)
-    li $t2, 0                 # t2 = j = 0
+	outer_loop:
+ 		bge $t1, $s5, sort_done   # if i >= elem_count, done
+   	 	# Inner loop counter (j)
+  	  	li $t2, 0                 # t2 = j = 0
     
-inner_loop:
-    add $t3, $t2, 1           # t3 = j + 1
-    bge $t3, $s5, inner_done  # if j+1 >= elem_count, end inner loop
+	inner_loop:
+    		add $t3, $t2, 1           # t3 = j + 1
+    		bge $t3, $s5, inner_done  # if j+1 >= elem_count, end inner loop
     
-    # Load array[j] and array[j+1]
-    sll $t4, $t2, 2           # offset = j * 4
-    la $t5, float_array
-    add $t6, $t5, $t4         # addr of array[j]
-    lw $t7, 0($t6)            # t7 = array[j]
-    lw $t8, 4($t6)            # t8 = array[j+1]
+   	 	# Load array[j] and array[j+1]
+    		sll $t4, $t2, 2           # offset = j * 4
+    		la $t5, float_array
+    		add $t6, $t5, $t4         # addr of array[j]
+  		lw $t7, 0($t6)            # t7 = array[j]
+    		lw $t8, 4($t6)            # t8 = array[j+1]
     
-    # Compare array[j] > array[j+1]
-    ble $t7, $t8, no_swap
+    		# Compare array[j] > array[j+1]
+    		ble $t7, $t8, no_swap
     
-    # Swap array[j] and array[j+1]
-    sw $t8, 0($t6)
-    sw $t7, 4($t6)
+    		# Swap array[j] and array[j+1]
+    		sw $t8, 0($t6)
+    		sw $t7, 4($t6)
 
-no_swap:
-    addi $t2, $t2, 1          # j++
-    j inner_loop
+	no_swap:
+    		addi $t2, $t2, 1	  # j++
+    		j inner_loop
 
-inner_done:
-    addi $t1, $t1, 1          # i++
-    j outer_loop
+	inner_done:
+    		addi $t1, $t1, 1          # i++
+    		j outer_loop
 
-sort_done:
-    # Print "List sorted!"
-    la $a0, list_sorted
-    li $v0, 4
-    syscall
+	sort_done:
+    		# Print "List sorted!"
+    		la $a0, list_sorted
+    		li $v0, 4
+    		syscall
 
-    j menuLoop
+    		j menuLoop
 	
 # 2. Find the average value of the elements of the list.
 FIND_AVERAGE:
-	la $a0, average
-	li $v0, 4
-	syscall
-	j menuLoop
-
+	lw $t1, elem_count	# t1 = # of elements
+	la $t2, float_array	# Pointer
+	mtc1 $zero, $f0		# Sum
+	
+	avg_sum_loop:
+		beqz $t1, avg_compute	# if no elements, end loop
+		l.s $f2, 0($t2)		# loads the current array element in $f2
+		add.s $f0, $f0, $f2	# sum + element
+		addi $t2, $t2, 4	# move to the next element
+		addi $t1, $t1, -1	# counter--
+		j avg_sum_loop		# repeat
+		
+	avg_compute:
+		lw $t3, elem_count	# Reloads element count
+		mtc1 $t3, $f4
+		cvt.s.w $f4, $f4	# $f4 = float(elem_count)
+	
+		div.s $f6, $f0, $f4	# $f6 = average
+	
+		la $a0, average
+		li $v0, 4
+		syscall
+	 
+		mov.s $f12, $f6
+		li $v0, 2
+		syscall
+	
+		la $a0, newline
+		li $v0, 4
+		syscall 
+	
+		j menuLoop
+	
 # 3. Find the lowest element of the list.
 FIND_LOWEST:
-	la $a0, lowest
-	li $v0, 4
-	syscall
-	j menuLoop
+	lw $t1, elem_count	# load # of elements in $t1
+	blez $t1, menuLoop	# If list is empty, end
+	la $t2, float_array
+	
+	l.s $f0, 0($t2)		# $f0 will hold the lowest value
+	addi $t2, $t2, 4	# next element
+	addi $t1, $t1, -1	# decrement
+	
+	find_lowest_loop:
+		beqz $t1, lowest_done	# If no elements, exit
+		l.s $f2, 0($t2)		# load element
+		c.lt.s $f2, $f0		# if f2 < f0 = new lowest
+		bc1f lowest_skip	# if false, skip
+		mov.s $f0, $f2		# lowest is current element
+	
+	lowest_skip:
+		addi $t2, $t2, 4	# next element
+		addi $t1, $t1, -1	# decrement
+		j find_lowest_loop
+	
+	lowest_done:
+    		# Print "The lowest value is "
+    		la $a0, lowest
+    		li $v0, 4
+    		syscall
+
+    		# Print lowest value (float in $f0)
+    		mov.s $f12, $f0
+    		li $v0, 2
+    		syscall
+
+    		# Print newline for readability
+    		la $a0, newline
+    		li $v0, 4
+    		syscall
+
+    		# Return to menu
+    		j menuLoop
 	
 # 4. Find the greatest element of the list.
 FIND_GREATEST:
-	la $a0, greatest
-	li $v0, 4
-	syscall
-	j menuLoop
+	lw $t1, elem_count	# load # of elements in $t1
+	blez $t1, menuLoop	# If list is empty, end
+	la $t2, float_array
 	
+	l.s $f0, 0($t2)		# $f0 will hold the lowest value
+	addi $t2, $t2, 4	# next element
+	addi $t1, $t1, -1	# decrement
+	
+	find_greatest_loop:
+		beqz $t1, greatest_done	# If no elements, exit
+		l.s $f2, 0($t2)		# load element
+		c.lt.s $f0, $f2 	# if f2 < f0 = new lowest
+		bc1f greatest_skip	# if false, skip
+		mov.s $f0, $f2		# lowest is current element
+	
+	greatest_skip:
+		addi $t2, $t2, 4	# next element
+		addi $t1, $t1, -1	# decrement
+		j find_greatest_loop
+	
+	greatest_done:
+    		# Print "The lowest value is "
+    		la $a0, greatest
+    		li $v0, 4
+    		syscall
+
+    		# Print lowest value (float in $f0)
+    		mov.s $f12, $f0
+    		li $v0, 2
+    		syscall
+
+    		# Print newline
+    		la $a0, newline
+    		li $v0, 4
+    		syscall
+
+    		# Return to menu
+    		j menuLoop
+    	
 # 5. Find the sum of all elements of the list.
 FIND_SUM:
-	la $a0, sum
-	li $v0, 4
-	syscall
-	j menuLoop
+	lw $t1, elem_count	# t1 = # of elements
+	la $t2, float_array	# Pointer
+	mtc1 $zero, $f0		# Sum
+	
+	sum_loop:
+		beqz $t1, sum_done	# if no elements, end loop
+		l.s $f2, 0($t2)		# loads the current array element in $f2
+		add.s $f0, $f0, $f2	# sum + element
+		addi $t2, $t2, 4	# move to the next element
+		addi $t1, $t1, -1	# counter--
+		j sum_loop		# repeat
+	
+	sum_done:
+		la $a0, sum		# "The sum of the list it"
+		li $v0, 4
+		syscall
+	
+		mov.s $f12, $f0		# moves the sum to $f0
+		li $v0, 2
+		syscall
+	
+		la $a0, newline		# new line
+		li $v0, 4
+		syscall 
+		j menuLoop
 	
 # 6. Print a specific index of the list.
 FIND_INDEX:
