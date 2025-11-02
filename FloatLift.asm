@@ -167,7 +167,7 @@ SORT_LIST:
 	li $t1, 0                	  # t1 = i = 0
 
 	outer_loop:
- 		bge $t1, $s5, sort_done   # if i >= elem_count, done
+		bge $t1, $s5, sort_done   # if i >= elem_count, done
    	 	# Inner loop counter (j)
   	  	li $t2, 0                 # t2 = j = 0
     
@@ -294,9 +294,9 @@ FIND_GREATEST:
 	find_greatest_loop:
 		beqz $t1, greatest_done	# If no elements, exit
 		l.s $f2, 0($t2)		# load element
-		c.lt.s $f0, $f2 	# if f2 < f0 = new lowest
+		c.lt.s $f0, $f2 	# if f0 < f2 = new highest
 		bc1f greatest_skip	# if false, skip
-		mov.s $f0, $f2		# lowest is current element
+		mov.s $f0, $f2		# highest is current element
 	
 	greatest_skip:
 		addi $t2, $t2, 4	# next element
@@ -304,12 +304,12 @@ FIND_GREATEST:
 		j find_greatest_loop
 	
 	greatest_done:
-    		# Print "The lowest value is "
+    		# Print "The highest value is "
     		la $a0, greatest
     		li $v0, 4
     		syscall
 
-    		# Print lowest value (float in $f0)
+    		# Print highest value (float in $f0)
     		mov.s $f12, $f0
     		li $v0, 2
     		syscall
