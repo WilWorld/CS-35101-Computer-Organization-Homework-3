@@ -21,7 +21,7 @@ index_prompt: .asciiz "Enter index (0-based):"  # prompts user to enter a value 
 invalid: .asciiz "Invalid index.\n" 			# if invalid, will print
 complete:.asciiz "Completed!\n" 				# displays when complete
 invalid_menu: .asciiz  "Invalid menu selection, try again\n"
-nextOperation: .asciiz "\nPlease select an option: \n"
+nextOperation: .asciiz "Please select an option: \n"
 
 # Storage parameters
 MAX_ELEMS:            .word 100    # change if you want support for more elements
@@ -62,14 +62,52 @@ menuLoop:
 	# Handles invalid input
 	j INVALID_OPTION
 
-
 # PART 3: Execute the following functions on the list.
 # 1. Sort the list from lowest to highest, consider using the bubble sort algorithm explained in class.
 SORT_LIST:
-	la $a0, list_sorted
-	li $v0, 4
-	syscall
-	j menuLoop
+ # Load element count
+    lw $t0, elem_count        # t0 = number of elements
+    # Outer loop counter (i)
+    li $t1, 0                 # t1 = i = 0
+
+outer_loop:
+    bge $t1, $t0, sort_done   # if i >= elem_count, done
+    # Inner loop counter (j)
+    li $t2, 0                 # t2 = j = 0
+    
+inner_loop:
+    add $t3, $t2, 1           # t3 = j + 1
+    bge $t3, $t0, inner_done  # if j+1 >= elem_count, end inner loop
+    
+    # Load array[j] and array[j+1]
+    sll $t4, $t2, 2           # offset = j * 4
+    la $t5, float_array
+    add $t6, $t5, $t4         # addr of array[j]
+    lw $t7, 0($t6)            # t7 = array[j]
+    lw $t8, 4($t6)            # t8 = array[j+1]
+    
+    # Compare array[j] > array[j+1]
+    ble $t7, $t8, no_swap
+    
+    # Swap array[j] and array[j+1]
+    sw $t8, 0($t6)
+    sw $t7, 4($t6)
+
+no_swap:
+    addi $t2, $t2, 1          # j++
+    j inner_loop
+
+inner_done:
+    addi $t1, $t1, 1          # i++
+    j outer_loop
+
+sort_done:
+    # Print "List sorted!"
+    la $a0, list_sorted
+    li $v0, 4
+    syscall
+
+    j menuLoop
 	
 # 2. Find the average value of the elements of the list.
 FIND_AVERAGE:
