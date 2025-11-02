@@ -6,6 +6,7 @@
 
 .data
 prompt_enter_list:    .asciiz "This is the list sorting program.\nPlease enter a list to process\n"
+.align 2
 input_buf:            .space 256            # buffer for user input line
 input_buf_len:        .word 256
 
@@ -22,22 +23,117 @@ invalid: .asciiz "Invalid index.\n" 			# if invalid, will print
 complete:.asciiz "Completed!\n" 				# displays when complete
 invalid_menu: .asciiz  "Invalid menu selection, try again\n"
 nextOperation: .asciiz "Please select an option: \n"
+comma: .asciiz ", "
+newline: .asciiz "\n"
+openBracket: .asciiz "["
+closedBracket: .asciiz "]"
 
 # Storage parameters
 MAX_ELEMS:            .word 100    # change if you want support for more elements
 float_array:          .space 400   # 100 * 4 bytes = 400 bytes (use MAX_ELEMS*4)
-elem_count:           .word 0
+elem_count:           .word 0 #gonna store this value in $s5
 
 .text
-main:
+initialInput:
+	la $a0, prompt_enter_list
+	li $v0, 4
+	syscall
+	
+	la $t0, input_buf        # pointer to input string
+    	la $t4, float_array         # pointer to array base
+    	move $s5, $zero
+	
+	li $v0, 8          # syscall code 8 = read string
+    	la $a0, input_buf      # load address of buffer
+    	li $a1, 400          # maximum number of bytes to read
+    	syscall
+  	
+parseIntput:
+ 	# Build constants 10.0 and 0.1
+    	li   $t1, 10
+    	mtc1 $t1, $f8
+    	cvt.s.w $f8, $f8       # $f8 = 10.0
+
+	li   $t1, 1
+    	mtc1 $t1, $f2
+    	cvt.s.w $f2, $f2
+    	div.s $f2, $f2, $f8    # $f2 = 0.1
+    	parseLoop:
+    		lb $t1, 0($t0)
+    		beqz $t1, done         # end of string
+    		beq  $t1, '[', skipChar
+    		beq  $t1, ',', storeValue
+    		beq  $t1, ']', storeValue
+    		beq  $t1, '.', setFraction
+
+    		# skip anything that's not a digit
+    		blt  $t1, '0', nextChar
+    		bgt  $t1, '9', nextChar
+
+    		#Converts the char into and int, then to a float
+    		addi $t1, $t1, -48
+    		mtc1 $t1, $f6
+    		cvt.s.w $f6, $f6
+
+    		beq  $t3, 0, integerPart
+    	fractionPart:
+    		li $t7, 2              # only 2 fractional digits
+    		bge $t6, $t7, nextChar
+
+    		mul.s $f6, $f6, $f2
+    		add.s $f0, $f0, $f6
+   		 div.s $f2, $f2, $f8    # scale down: 0.1 → 0.01
+    		addi $t6, $t6, 1
+    		j nextChar
+
+	integerPart:
+    		mul.s $f0, $f0, $f8
+    		add.s $f0, $f0, $f6
+    		j nextChar
+
+	setFraction:
+    		li $t3, 1              # switch to fractional part
+    		addi $t0, $t0, 1
+    		j parseLoop
+		
+	skipChar:
+    		addi $t0, $t0, 1
+    		j parseLoop
+
+	storeValue:
+    		# store current float if any digits were read
+    		s.s $f0, 0($t4) 
+    		addi $t4, $t4, 4
+    		addi $s5, $s5, 1
+
+    		# reset for next number
+    		li $t3, 0
+    		li $t6, 0
+    		li $t1, 0
+    		mtc1 $t1, $f0
+    		cvt.s.w $f0, $f0
+    		li   $t1, 1
+    		mtc1 $t1, $f2
+    		cvt.s.w $f2, $f2
+    		div.s $f2, $f2, $f8    # reset $f2 = 0.1
+
+    		addi $t0, $t0, 1
+    		j parseLoop
+
+	nextChar:
+    		addi $t0, $t0, 1
+    		j parseLoop
+
+	done:
+		sw $s5, elem_count
+    		
 # PART 4: Each function will be executed as requested by the user, using a prompt system to display the different 
 #    	  options available and process what the user wants.
-
+main:
     # Display menu prompt once
     la $a0, menu_prompt
     li $v0, 4
     syscall
-
 menuLoop:
     # Display initial prompt once
     la $a0, nextOperation
@@ -71,13 +167,13 @@ SORT_LIST:
     li $t1, 0                 # t1 = i = 0
 
 outer_loop:
-    bge $t1, $t0, sort_done   # if i >= elem_count, done
+    bge $t1, $s5, sort_done   # if i >= elem_count, done
     # Inner loop counter (j)
     li $t2, 0                 # t2 = j = 0
     
 inner_loop:
     add $t3, $t2, 1           # t3 = j + 1
-    bge $t3, $t0, inner_done  # if j+1 >= elem_count, end inner loop
+    bge $t3, $s5, inner_done  # if j+1 >= elem_count, end inner loop
     
     # Load array[j] and array[j+1]
     sll $t4, $t2, 2           # offset = j * 4
@@ -146,6 +242,42 @@ FIND_INDEX:
 	
 # 7. Print the list contents.
 PRINT_LIST:
+#initialize registers for array, counter, and max elements
+la $t4, float_array
+move $t7, $zero
+lw $s5, elem_count
+
+
+li $v0, 4
+la $a0, openBracket
+syscall
+
+	print_loop:
+    		bge $t7, $s5, exit
+    		l.s $f12, 0($t4)
+    		li $v0, 2            
+    		syscall
+
+    		addi $t7, $t7, 1
+    		addi $t4, $t4, 4
+    		blt $t7, $s5, print_comma
+    		j newline_out
+
+	print_comma:
+    		li $v0, 4
+    		la $a0, comma
+    		syscall
+    		j print_loop
+
+	newline_out:
+		li $v0, 4
+		la $a0, closedBracket
+		syscall
+		
+    		li $v0, 4
+    		la $a0, newline
+    		syscall
+    	exit:
 	la $a0, complete
 	li $v0, 4
 	syscall
