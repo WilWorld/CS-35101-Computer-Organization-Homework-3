@@ -352,10 +352,43 @@ FIND_SUM:
 	
 # 6. Print a specific index of the list.
 FIND_INDEX:
+	lw $t1, elem_count	# t1 = # of elements
+	la $t2, float_array	# Pointer
+	
+	sub $t1, $t1, 1 # -1 to acount for how elements are index in a list
+	
+
 	la $a0, index_prompt
 	li $v0, 4
 	syscall
-	j menuLoop
+	
+	li $v0, 5
+	syscall
+	
+	#if we get past these two then the index was valid
+	blt $v0, $zero, notValid
+	bgt  $v0, $t1, notValid
+	
+	mul  $v0, $v0, 4
+	
+	add  $t2, $v0, $t2
+	
+	l.s $f12, 0($t2)
+	li $v0, 2
+	syscall
+	
+	la $a0, newline
+	li $v0, 4
+	syscall
+	
+	j menuLoop		
+	notValid:
+		la $a0, invalid
+		li $v0, 4
+		syscall
+		j menuLoop
+	
+
 	
 # 7. Print the list contents.
 PRINT_LIST:
